@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Run Python with Skulpt</title>
+    <script src="skulpt.min.js" type="text/javascript"></script>
+    <script src="skulpt-stdlib.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+    <div id="output"></div>
+    <script>
+        function outf(text) {
+            var outputElement = document.getElementById("output");
+            outputElement.innerHTML += text + "<br>";
+        }
+
+        function builtinRead(x) {
+            if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined) {
+                throw "File not found: '" + x + "'";
+            }
+            return Sk.builtinFiles["files"][x];
+        }
+
+        function runCode(prog) {
+            Sk.configure({ output: outf, read: builtinRead, python3: true });
+            (Sk.TurtleGraphics || (Sk.TurtleGraphics = {})).target = 'output';
+            var myPromise = Sk.misceval.asyncToPromise(function() {
+                return Sk.importMainWithBody("<stdin>", false, prog, true);
+            });
+            myPromise.then(function(mod) {
+                console.log('success');
+            },
+            function(err) {
+                console.error(err.toString());
+            });
+        }
+
+        function loadAndRunScript() {
+            fetch('sketch.py')
+                .then(response => response.text())
+                .then(text => {
+                    runCode(text);
+                })
+                .catch(error => console.error('Error loading script:', error));
+        }
+
+        // Run the code automatically
+        loadAndRunScript();
+    </script>
+</body>
+
+</html
